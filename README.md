@@ -11,18 +11,27 @@ The configuration below would create a new version tag in your repository any ti
 **Note**: since this action examines your git history to detect changes, you must set a `fetch-depth` of at least `2` with `actions/checkout` for that history to be present.
 
 ```yml
-# ...
+name: Create version tag when version bumps
+
+on:
+  pull_request:
+    types:
+      - closed
+
 jobs:
-  tag-new-versions:
+  if_merged_tag_branch:
+    permissions:
+      contents: write
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: salsify/action-detect-and-tag-new-version@v2
+      - uses: keplercompute/action-detect-and-tag-new-version@master
         with:
           version-command: |
-            cat current-version.txt
+            cat relatve/path/to/VERSION
 ```
 
 ### Inputs
@@ -45,6 +54,15 @@ All inputs are optional.
  - `previous-version`: the detected previous version of this repository
  - `current-version`: the detected current version of this repository
  - `tag`: if a new tag is created, this output will contain its name
+
+## Maintainance Notes
+
+You have to compile the typescript into a single file if you make changes.
+Install `npm` via some package manager and `vercel` by `npm i -g vercel`.
+Then you may need to set the environment variable `export NODE_OPTIONS=--openssl-legacy-provider`
+and finally `npm run build` to update `dist/index.js`, which should be committed to master for use 
+by GitHub Actions.
+
 
 ## Version Determination
 
